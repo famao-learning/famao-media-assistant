@@ -1,0 +1,22 @@
+<dialog class="editor-modal" id="matrixDialog" aria-labelledby="matrixHeading">
+  <div class="modal-heading"><h2 id="matrixHeading">矩媒连接</h2><button class="close-button" type="button" aria-label="关闭矩媒连接" onclick="$('matrixDialog').close()">×</button></div>
+  <div class="modal-body">
+    <p>助手负责选题、文案、素材与草稿；绑定到矩媒的账号由矩媒处理发布。账号登录和创作声明请在矩媒中设置。</p>
+    <label class="f" for="matrixExecutable">matrixmedia.exe 路径</label><input id="matrixExecutable" placeholder="粘贴安装后的完整 EXE 路径">
+    <label class="f" for="matrixPort">本机接口端口</label><input id="matrixPort" type="number" min="1024" max="65535" value="30088">
+    <p class="hint">连接只使用本机 127.0.0.1。助手账号和矩媒账号需逐个绑定；旧登录状态不会迁入矩媒。</p>
+    <div class="row"><button class="b" type="button" onclick="saveMatrixSettings()">保存连接设置</button><button class="b" type="button" onclick="openMatrix()">打开矩媒</button><button class="b" type="button" onclick="refreshMatrixAccounts()">测试连接并刷新账号</button></div>
+    <p id="matrixStatus" role="status" class="hint"></p><div id="matrixAccountList"></div>
+    <hr><button class="b" type="button" onclick="loadMatrixHistory()">读取矩媒发布记录</button><p class="hint">下列状态直接来自矩媒。任务已入队、已保存草稿或本机定时，均不等于作品已公开发布。</p><div id="matrixHistory"></div>
+    <p class="hint">小红书仍可能识别第三方自动发布；本机运行和真实浏览器不代表免风控。</p>
+  </div>
+</dialog>
+
+<dialog class="editor-modal" id="matrixConfirmDialog" aria-labelledby="matrixConfirmHeading">
+  <div class="modal-heading"><h2 id="matrixConfirmHeading">确认本次矩媒发布</h2><button class="close-button" type="button" aria-label="取消本次发布" onclick="closeMatrixConfirmation(false)">×</button></div>
+  <div class="modal-body"><div id="matrixConfirmDetails"></div>
+    <p>确认后才会交给矩媒上传和处理。矩媒可能根据账号设置转存草稿；助手会保留待核对状态。</p>
+    <label class="choice"><input id="matrixConfirmChecked" type="checkbox">我已核对账号绑定、文案、矩媒中的创作声明和发布方式</label>
+  </div>
+  <div class="modal-actions"><button class="secondary-button" type="button" onclick="closeMatrixConfirmation(false)">返回修改</button><button class="solid-button" id="matrixConfirmSubmit" type="button" disabled onclick="closeMatrixConfirmation(true)">确认并交给矩媒</button></div>
+</dialog>

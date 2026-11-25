@@ -1,0 +1,19 @@
+<dialog class="editor-modal radar-dialog" id="radarSearchDialog" aria-labelledby="radarSearchTitle">
+  <form id="radarSearchForm" class="modal-body" autocomplete="off">
+    <h2 id="radarSearchTitle">联网搜索与资料研究</h2>
+    <p class="hint">检索会发送热点标题和相关问题，页面读取通过所选搜索服务进行；研究整理和文案生成使用当前 AI 服务。Key 在本机加密保存。</p>
+    <label class="radar-check"><input id="radarSearchEnabled" type="checkbox">启用联网搜索</label>
+    <label class="radar-check"><input id="radarSearchAuto" type="checkbox">缺少研究资料时，起草文案前自动研究</label>
+    <label class="f" for="radarSearchProvider">搜索服务</label>
+    <select id="radarSearchProvider"><option value="deepseek">DeepSeek 官方 Search / Fetch</option><option value="tavily">Tavily Search / Extract</option><option value="exa">Exa Search / Contents</option></select>
+    <p id="radarSearchKeyHint" class="hint"></p>
+    <label class="f" for="radarSearchKey">搜索服务自己的 API Key</label>
+    <input id="radarSearchKey" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096">
+    <label class="radar-check"><input id="radarSearchClear" type="checkbox">清除所选搜索服务已保存的 Key</label>
+    <div class="row"><div><label class="f" for="radarSearchResults">每个问题的结果数</label><input id="radarSearchResults" type="number" min="3" max="10" required></div><div><label class="f" for="radarSearchPages">最多读取页面数</label><input id="radarSearchPages" type="number" min="1" max="6" required></div></div>
+    <label class="f" for="radarSearchTimeout">单次请求超时（秒）</label><input id="radarSearchTimeout" type="number" min="10" max="60" required>
+    <p class="hint">每次研究最多检索两个问题。搜索摘要与实际读取正文分开显示；AI 会列出证据、日期和冲突，检索成功不代表内容已经证实。</p>
+    <p id="radarSearchMessage" class="hint" role="status"></p><p id="radarSearchError" class="radar-error" role="alert"></p>
+    <div class="radar-topic-actions"><button class="b" type="button" data-radar-close="radarSearchDialog">取消</button><button class="b" id="radarSearchTest" type="button">测试已保存的搜索配置</button><button class="b p" type="submit">保存搜索配置</button></div>
+  </form>
+</dialog>

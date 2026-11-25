@@ -1,0 +1,29 @@
+<dialog class="editor-modal radar-dialog radar-ai-config" id="radarAIConfigDialog" aria-labelledby="radarAIConfigTitle">
+  <form id="radarAIConfigForm" class="modal-body" autocomplete="off">
+    <h2 id="radarAIConfigTitle">AI 服务配置</h2>
+    <label class="f" for="radarAIProvider">服务商</label>
+    <select id="radarAIProvider"></select>
+    <p class="hint" id="radarAIProviderStatus"></p>
+    <p class="hint">使用你配置的服务进行选题与创作。账号首次打开后台或检查后，会自动分析一次已导入的高流量作品资料；完成后不重复。将发送作品标题、统计及可用文案/字幕；选题与创作还会使用账号定位和研究笔记。</p>
+    <label class="radar-check"><input id="radarAIEnabled" type="checkbox">启用 AI 选题与创作</label>
+    <label class="f" for="radarAIProtocol">接口协议</label>
+    <select id="radarAIProtocol"><option value="chat_completions">OpenAI 兼容 · Chat Completions</option><option value="responses">Responses</option></select>
+    <label class="f" for="radarAIBaseURL">接口地址（Base URL 或完整请求地址）</label>
+    <input id="radarAIBaseURL" placeholder="https://服务商地址/v1" maxlength="2000" required>
+    <p class="hint">本机模型可填 http://127.0.0.1:11434/v1 等兼容地址。更换地址后需重新填写该服务的 Key。</p>
+    <label class="f" for="radarAIKey">API Key</label>
+    <input id="radarAIKey" type="password" autocomplete="new-password" spellcheck="false" maxlength="4096" placeholder="输入服务商提供的 API Key">
+    <label class="radar-check"><input id="radarAIClearKey" type="checkbox">清除已保存的 Key（本机无鉴权模型可留空）</label>
+    <label class="f" for="radarAIModel">模型名称</label><input id="radarAIModel" maxlength="200" placeholder="填写服务商支持的完整模型名称">
+    <p id="radarAIModelHint" class="hint"></p>
+    <div class="row"><div><label class="f" for="radarAITokens">输出 Token 上限</label><input id="radarAITokens" type="number" min="256" max="16384" required></div><div><label class="f" for="radarAITemperature">Temperature（留空使用模型默认）</label><input id="radarAITemperature" type="number" min="0" max="2" step="0.1"></div></div>
+    <div class="row"><div><label class="f" for="radarAITimeout">超时秒数</label><input id="radarAITimeout" type="number" min="10" max="180" required></div><div><label class="f" for="radarAICandidates">单次分析候选数</label><input id="radarAICandidates" type="number" min="5" max="60" required></div></div>
+    <label class="f" for="radarAISystemPrompt">自定义选题与创作要求</label><textarea id="radarAISystemPrompt" rows="3" maxlength="6000" placeholder="例如：优先选择能用生活案例解释的科学问题，避免夸大结论。"></textarea>
+    <details><summary>高级兼容参数</summary><label class="f" for="radarAITokenParameter">Chat Completions 的 Token 参数</label><select id="radarAITokenParameter"><option value="max_completion_tokens">max_completion_tokens</option><option value="max_tokens">max_tokens（部分兼容服务）</option></select><label class="f" for="radarAIExtra">额外请求参数（JSON 对象）</label><textarea id="radarAIExtra" rows="4" spellcheck="false" placeholder='{"reasoning_effort":"low"}'></textarea><p class="hint">例如服务商支持的 reasoning_effort、thinking 等。具体参数由服务商与模型决定。</p></details>
+    <p id="radarAIConfigMessage" class="hint" role="status"></p><p id="radarAIConfigError" class="radar-error" role="alert"></p>
+    <div class="radar-topic-actions"><button class="b" type="button" data-radar-close="radarAIConfigDialog">取消</button><button class="b" id="radarAITest" type="button">测试连接</button><button class="b p" type="submit">保存并使用此服务</button></div>
+  </form>
+</dialog>
+{% include "topic_research.html" %}
+<script defer src="{{ url_for('static', filename='topic-ai.js') }}"></script>
+<script defer src="{{ url_for('static', filename='topic-research.js') }}"></script>

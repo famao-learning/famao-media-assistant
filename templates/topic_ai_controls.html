@@ -1,0 +1,12 @@
+<section class="radar-ai-tools">
+  <div class="radar-topic-actions"><button class="b" id="radarSearchConfigButton" type="button">联网搜索配置</button><button class="b" id="radarAIResearch" type="button">联网研究</button><button class="b" id="radarAIGenerateOutline" type="button">AI 生成提纲</button><button class="b" id="radarAIGenerateDraft" type="button">AI 起草文案</button></div>
+  <p class="hint">没有研究资料时，起草文案会先自动联网研究。生成后直接填入文案草稿并保存；已有文案会先确认替换。空白文案生成时保留手工标题，研究笔记始终保留。提纲可预览后单独采用。</p>
+  <p id="radarAIMessage" class="hint" role="status" aria-live="polite"></p>
+  <div id="radarAIResult" class="hidden" aria-labelledby="radarAIResultTitle">
+    <h3 id="radarAIResultTitle">AI 生成结果</h3>
+    <p id="radarAIResultState" class="hint"></p>
+    <div id="radarAISuggestion" class="radar-outline"></div>
+    <div class="radar-topic-actions"><button class="b" id="radarAIAdoptOutline" type="button">采用此提纲</button><button class="b" id="radarAIAdoptDraft" type="button">填入标题和文案</button></div>
+  </div>
+  <div id="radarResearchResult" class="hidden"></div>
+</section>

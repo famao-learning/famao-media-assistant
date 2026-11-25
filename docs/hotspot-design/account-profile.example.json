@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "name": "餐饮经营与店主故事（示例）",
+  "template": {
+    "key": "restaurant_creator",
+    "version": 1
+  },
+  "domains": ["food", "restaurant_business"],
+  "expression_modes": ["business_analysis", "character_story"],
+  "audiences": ["restaurant_owners"],
+  "positioning": "面向餐饮经营者，解释真实经营案例，并讲述店主有依据可查的经历。",
+  "regions": {
+    "mode": "prefer",
+    "codes": ["CN-51"],
+    "allow_national": true,
+    "unknown_location": "label"
+  },
+  "languages": ["zh"],
+  "publishing_platforms": [],
+  "formats": ["short_video"],
+  "production_window_hours": 48,
+  "goals": ["audience_growth", "professional_reputation"],
+  "follow_topics": ["门店经营", "菜单设计", "地方饮食", "店主经历"],
+  "exclude_topics": ["加盟招商广告"],
+  "source_selection": {
+    "mode": "capability_based",
+    "preferred_categories": ["news", "industry", "local", "interview"],
+    "binding_ids": []
+  },
+  "ranking": {
+    "policy_version": "creator-v1",
+    "weights": {
+      "relevance": 0.30,
+      "momentum": 0.10,
+      "creative_value": 0.25,
+      "evidence": 0.20,
+      "feasibility": 0.10,
+      "novelty": 0.05
+    },
+    "missing_feature_policy": "mark_and_reweight_with_coverage",
+    "exploration_slots_per_10": 1,
+    "max_same_event_per_feed": 1
+  },
+  "evidence_policy": {
+    "allow_title_only_discovery": true,
+    "require_body_for_factual_outline": true,
+    "expose_conflicts": true,
+    "invent_dialogue": false
+  },
+  "notifications": {
+    "enabled": false,
+    "channels": [],
+    "minimum_score": 75,
+    "cooldown_hours": 6,
+    "daily_limit": 3,
+    "timezone_source": "workspace",
+    "quiet_hours": {"start": "22:00", "end": "08:00"}
+  }
+}

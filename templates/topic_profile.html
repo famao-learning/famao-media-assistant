@@ -1,0 +1,14 @@
+<dialog class="editor-modal radar-dialog radar-topic-dialog" id="radarPositionDialog" aria-labelledby="radarPositionTitle"><div class="modal-body">
+  <h2 id="radarPositionTitle">从高流量作品分析定位</h2>
+  <p class="hint">打开后台或检查账号时首次读取作品，按该平台统计选取高流量样本。完成后按账号保存，不再重复导入。仅有标题和发布文案时生成初步定位，并明确标注依据。</p>
+  <section class="radar-outline"><h3>首次初始化状态</h3><p id="radarBootstrapStatus" role="status"></p><p id="radarBootstrapDetails" class="hint"></p><div class="radar-topic-actions"><button class="b" id="radarBootstrapRetry" type="button">重试未完成步骤</button><button class="b" id="radarBootstrapRestart" type="button">重新导入并定位</button></div></section>
+  <p class="hint">点击分析会将入选作品的标题、播放量和内容文本发送给已配置的 AI 服务。</p>
+  <label class="f" for="radarWorksScope">数据范围</label><input id="radarWorksScope" maxlength="500" placeholder="例如：近90天全部视频，统计于2026-10-17">
+  <details id="radarWorksImport"><summary>导入或更新作品数据</summary><p class="hint">支持 CSV / JSON，字段：id、title、views、url、published_at、transcript、description。播放量需是播放次数；字幕和内容可在选样后补充。每次导入替换本账号样本，不会修改定位。</p><input id="radarWorksFile" type="file" accept=".csv,.json,.txt"><textarea id="radarWorksText" rows="5" placeholder="粘贴平台导出的数据或按上述字段整理的 CSV / JSON"></textarea><div class="radar-topic-actions"><button class="b" id="radarWorksTemplate" type="button">下载 CSV 表头</button><button class="b" id="radarWorksSave" type="button">保存作品样本</button></div></details>
+  <div class="radar-ai-toolbar"><label for="radarWorksTop">选取统计最高的</label><select id="radarWorksTop" style="width:auto"><option value="3">3 个</option><option value="5" selected>5 个</option><option value="10">10 个</option></select><button class="b p" id="radarPositionAnalyze" type="button">保存内容并分析</button></div>
+  <p id="radarWorksSummary" class="hint"></p><div id="radarWorksList"></div>
+  <p id="radarPositionMessage" class="hint" role="status"></p><p id="radarPositionError" class="radar-error" role="alert"></p>
+  <section id="radarPositionResult" class="hidden"><h3>AI 定位建议</h3><div id="radarPositionEvidence" class="radar-outline"></div><label class="f" for="radarPositionDirection">建议定位（可编辑）</label><textarea id="radarPositionDirection" rows="3" maxlength="1000"></textarea><label class="f" for="radarPositionAudience">目标受众假设</label><input id="radarPositionAudience" maxlength="200"><label class="f" for="radarPositionDomains">领域</label><input id="radarPositionDomains"><label class="f" for="radarPositionKeywords">选题关键词</label><input id="radarPositionKeywords"><label class="radar-check"><input type="checkbox" id="radarPositionInherit">采用后继续继承账号中心标签</label><p class="hint">默认以作品分析得到的方向筛选。已有排除词和地区设置保留。高播放样本反映优势内容，仍需结合近期普通作品核对。</p><button class="b p" id="radarPositionAdopt" type="button">采用为账号定位</button></section>
+  <div class="radar-topic-actions"><button class="b" id="radarPositionClose" type="button">关闭</button></div>
+</div></dialog>
+<script defer src="{{ url_for('static', filename='topic-profile.js') }}"></script>

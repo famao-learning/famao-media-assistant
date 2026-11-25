@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多平台发布助手</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--line:#e5e7eb;--text:#1f2937;--muted:#6b7280;--pri:#ff2c55;--ok:#16a34a;--bad:#dc2626;--warn:#d97706}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 -apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+header{background:#111827;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px}
+header h1{font-size:17px;margin:0}header nav button{background:none;border:0;color:#9ca3af;font-size:14px;cursor:pointer;padding:6px 10px}
+header nav button.on{color:#fff;border-bottom:2px solid var(--pri)}
+#quitBtn{margin-left:auto;background:none;border:1px solid #4b5563;color:#d1d5db;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px}
+#quitBtn:hover{border-color:var(--bad);color:#fff}
+main{display:grid;grid-template-columns:400px 1fr 360px;gap:16px;padding:16px;align-items:start}
+@media(max-width:1200px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+button.b{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px}
+button.b:hover{border-color:#9ca3af}button.p{background:var(--pri);color:#fff;border-color:var(--pri)}
+button.p:disabled{opacity:.5}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+label.f{display:block;margin:10px 0 4px;color:var(--muted);font-size:13px}
+.plat{margin-top:12px}.plat h3{font-size:13px;color:var(--muted);margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.acc{display:flex;align-items:center;gap:8px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
+.acc input{width:auto}.acc .n{flex:1;min-width:0}.acc .n b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc{flex-wrap:wrap}.acc-actions{display:flex;gap:6px;width:100%}.acc-actions button:first-child{flex:1}
+.acc .n small{color:var(--muted)}
+.tag{font-size:12px;padding:1px 6px;border-radius:10px;background:#f3f4f6}
+.tag.ok{background:#dcfce7;color:var(--ok)}.tag.bad{background:#fee2e2;color:var(--bad)}.tag.busy{background:#fef3c7;color:var(--warn)}
+.dy{color:#000}.xhs{color:#ff2442}.ks{color:#ff6600}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.seg{display:flex;gap:0}.seg label{flex:1;text-align:center;border:1px solid var(--line);padding:6px;cursor:pointer}
+.seg label:first-child{border-radius:6px 0 0 6px}.seg label:last-child{border-radius:0 6px 6px 0}
+.seg input{display:none}.seg input:checked+span{color:var(--pri);font-weight:600}
+.hint{color:var(--muted);font-size:12px;margin-top:4px}
+.task{border-bottom:1px solid var(--line);padding:8px 0}.task:last-child{border:0}
+.task pre{background:#f9fafb;border-radius:6px;padding:8px;margin:6px 0 0;max-height:220px;overflow:auto;white-space:pre-wrap;font-size:12px}
+.st-完成{color:var(--ok)}.st-失败,.st-部分失败{color:var(--bad)}.st-进行中{color:var(--warn)}
+table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid var(--line);padding:7px;text-align:left;font-size:13px}
+.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:#0006;display:flex;align-items:center;justify-content:center}
+.modal .card{width:340px}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#eef2ff;color:#4338ca;margin:2px 4px 0 0}
+.chips{margin-top:8px}.chips .chip{cursor:pointer;border:1px solid transparent}.chips .chip.on{background:#4338ca;color:#fff}
+.bili{color:#00a1d6}
+.target{display:grid;grid-template-columns:86px 1fr 1fr auto auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
+.target.off{opacity:.55}.target label{display:flex;gap:6px;align-items:center;font-weight:600;cursor:pointer}.target label input{width:auto}
+.tgst{font-size:12px;margin-right:10px}
+.target .b{white-space:nowrap}.target .tgst{margin-right:0}
+#tagChips{min-height:22px}
+</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='publisher.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='workspace.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='app-shell.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='topic-radar.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='brand/app.ico') }}">
+</head>
+<body>
+<header><h1><img class="brand-logo" src="{{ url_for('static', filename='brand/logo.png') }}" alt=""><span class="brand-copy">自媒体发布助手<small>创作 · 管理 · 发布</small></span></h1>
+<nav><button class="on" data-tab="pub">发布作品</button><button data-tab="radar">热点选题</button><button data-tab="his">发布记录</button></nav>
+<div class="header-tools"><button class="b" type="button" onclick="showMatrix()">矩媒连接</button><small id="settingsStatus" role="status" hidden style="color:#fbbf24"></small><button class="b" type="button" onclick="document.getElementById('aboutDialog').showModal()">数据与版本</button><button id="quitBtn" onclick="quitApp()">退出程序</button></div></header>
+<div class="modal hidden" id="quitMsg" style="background:var(--bg)"><div class="card" style="text-align:center"><h2 style="display:block">已退出，可以关闭这个页面</h2><div class="hint">下次使用时，从桌面或开始菜单打开「自媒体发布助手」。</div></div></div>
+<dialog class="editor-modal about-card" id="aboutDialog"><div class="modal-body"><img src="{{ url_for('static', filename='brand/logo.png') }}" alt="应用图标"><h2>自媒体发布助手 <small>v{{ app_version }}</small></h2><p>1.1.9 恢复版 · 已移除小红书板块。</p><label class="f">当前账号与作品数据目录</label><div class="data-location">{{ data_location }}</div><p>账号、登录状态与排序保存在此目录。升级或卸载程序会保留数据。草稿默认在 7 天未修改后自动清理，可在草稿箱改为 30／90 天或不自动清理。打开发布页不会自动填入旧草稿。</p><div class="row"><button class="b p" type="button" onclick="document.getElementById('aboutDialog').close()">知道了</button></div></div></dialog>
+
+<main id="pub">
+  <div id="radarHandoff" class="radar-handoff hidden"><div><b id="radarHandoffTitle"></b><p>选择作品文件后，可将已编辑的选题文案填入当前作品，并选择对应账号。</p></div><button class="b p" id="radarApplyHandoff" type="button">填入当前作品</button><button class="b" id="radarCancelHandoff" type="button">取消</button></div>
+  <aside class="workspace-sidebar">
+  <section class="card account-card">
+    <div class="account-heading"><div><h2>账号中心 <span id="accountCount">0</span></h2><p id="accountSortHint">拖动头像或手柄调整顺序</p></div><button class="icon-button" id="collapseAccounts" type="button" aria-label="收起账号列表" aria-expanded="true" onclick="toggleAccountList()">⌃</button></div>
+    <div class="account-toolbar"><button class="b p" type="button" onclick="showAcc()">＋ 添加账号</button><button class="b" type="button" onclick="checkAll()">检查登录</button></div>
+    <label class="account-group-control" for="accountGroupMode">账号排列 <select id="accountGroupMode" aria-label="账号排列方式"><option value="platform">按平台</option><option value="category">按作品分类</option></select></label>
+    <div id="accountListBody"><div class="chips" id="tagFilter"></div><div id="accounts"></div></div>
+  </section>
+  </aside>
+  {% include "publisher.html" %}
+  <aside class="workspace-task-rail"><section class="card task-card">
+    <h2>任务日志 <button class="b" onclick="loadTasks()">刷新</button></h2>
+    <div id="tasks"><div class="hint">暂无任务</div></div>
+  </section></aside>
+</main>
+
+<main id="his" class="hidden" style="grid-template-columns:1fr">
+  <section class="card"><h2>发布记录</h2>
+    <table><thead><tr><th>时间</th><th>账号</th><th>分类</th><th>类型</th><th>标题</th><th>结果</th></tr></thead><tbody id="hisBody"></tbody></table>
+  </section>
+</main>
+
+{% include "topic_radar.html" %}
+
+<dialog class="editor-modal account-dialog" id="accModal" aria-labelledby="accTitle"><form id="accountForm" class="modal-body">
+  <h2 id="accTitle">添加账号</h2>
+  <label class="f">平台</label>
+  <select id="accPlat">{% for key, config in platform_config.items() %}<option value="{{ key }}">{{ config.name }}</option>{% endfor %}</select>
+  <label class="f" for="accName">账号名称</label><input id="accName" placeholder="例如：小美的厨房" required>
+  <label class="f">标签 <span class="hint">（这个号专门发什么，可多个）</span></label><input id="accTags" list="tagList" placeholder="例如：美食 探店">
+  <label class="f" for="accProfile">账号主页链接 <span class="hint">（可选，粘贴该账号的个人主页链接）</span></label><input id="accProfile" type="url" placeholder="https://该平台的账号主页">
+  <div class="hint" id="profileHint">保存后点击账号名称，即可在软件内进入该账号主页。</div>
+  <div id="matrixAccountFields"><label class="f" for="accBackend">发布工具</label><select id="accBackend"><option value="assistant">助手原发布（保留原高级设置）</option><option value="matrixmedia">矩媒发布（每次先人工确认）</option></select><div id="matrixBindingFields" class="hidden"><label class="f" for="accMatrixAccount">对应的矩媒账号</label><select id="accMatrixAccount"></select><button class="b" type="button" onclick="refreshMatrixAccounts()">刷新矩媒账号</button><p id="matrixBindingStatus" class="hint"></p><p class="hint">请按实际账号绑定；账号名称相似不会自动绑定。未绑定的账号可以先保存，暂不能发布。</p></div></div>
+  <div class="hint" id="accHint">点确定后会打开当前窗口内的账号页面，扫码登录即可。每个账号的登录状态单独保存，互不影响。</div>
+  <div class="form-error hidden" id="accError" role="alert"></div>
+  <div class="row" style="margin-top:12px"><button class="b" id="accCancel" type="button" onclick="hideAcc()">取消</button><button class="b p" id="accOk" type="submit">确定并去登录</button></div>
+</form></dialog>
+
+<dialog class="editor-modal" id="resultDialog"><div class="modal-heading"><h2>确认发布结果</h2><button class="close-button" type="button" aria-label="关闭结果确认" onclick="document.getElementById('resultDialog').close()">×</button></div><div class="modal-body"><p id="resultAccount"></p><p class="hint">请先在该账号的作品列表核对。确认已发布后不会重发；确认未发布后才会加入失败重试。</p><label class="f" for="resultURL">作品链接（已发布时可填写）</label><input id="resultURL" placeholder="粘贴作品详情链接"><div class="form-error hidden" id="resultError" role="alert"></div></div><div class="modal-actions"><button class="secondary-button" id="confirmUnpublished" onclick="confirmTaskResult('not_published')">确认未发布</button><button class="solid-button" id="confirmPublished" onclick="confirmTaskResult('published')">确认已发布</button></div></dialog>
+{% include "matrixmedia.html" %}
+<script src="{{ url_for('static', filename='ui-settings.js') }}"></script>
+<script src="{{ url_for('static', filename='stable-render.js') }}"></script>
+<script>
+const PC={{ platform_config|tojson }};
+const PN=Object.fromEntries({{ platform_config.keys()|list|tojson }}.map(key=>[key,[PC[key].name,PC[key].color]]));
+const $=id=>document.getElementById(id);
+const ls=createUISettings({{ ui_settings|tojson }});
+// 发布目标：{platform: {on: bool, acc: id}}
+const tg=ls.get('targets',{});
+let accs=[],accountsLoaded=false,tagFilter=ls.get('tagFilter',''),editing=null;
+$('category').value=ls.get('category','');
+async function api(url,opt={}){const r=await fetch(url,opt);let j;try{j=await r.json()}catch{throw new Error(`后台响应异常（HTTP ${r.status}），请重试；若刚更新程序，请完全退出后重新启动。`)}if(!r.ok)throw new Error(j?.error||`请求失败（HTTP ${r.status}）`);return j}
+const jsend=(m,u,b)=>api(u,{method:m,headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const chips=tags=>tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('');
+const stTag=a=>a.busy?'<span class="tag busy">账号使用中</span>':`<span class="tag ${a.status==='已登录'?'ok':(a.status==='未登录'?'':'bad')}">${esc(a.status)}</span>`;
+const allTags=()=>[...new Set(accs.flatMap(a=>a.tags))];
+
+// 和后端 clean_tags 一样的解析：#、逗号、分号、空格、换行都当分隔符，去重
+// 某个账号的合集下拉框：没刷新过 / 列表为空 / 正常列表
+function colSelect(p,a,t){
+  if(a&&(a.publish_backend||(p==='xiaohongshu'?'matrixmedia':'assistant'))==='matrixmedia')return `<div class="hint">矩媒 · ${esc(a.matrix_name||'未绑定，请编辑账号')}</div>`;
+  if(!PC[p].collections)return `<div class="hint">${p==='x'?'不支持合集':'合集 / 播放列表请在后台选择'}</div>`;
+  const cols=a.collections,cur=(t.col||{})[a.id]||'';
+  if(!cols)return `<select disabled><option>合集未获取，请点刷新</option></select>`;
+  if(!cols.length)return `<select disabled title="${esc(a.collections_at||'')} 刷新"><option>该账号暂无合集</option></select>`;
+  return `<select aria-label="${PN[p][0]}合集" title="${esc(a.collections_at||'')} 刷新" onchange="setCol('${p}','${a.id}',this.value)"><option value="">不加入合集</option>${cols.map(c=>`<option value="${esc(c.name)}" ${c.name===cur?'selected':''}>合集：${esc(c.name)}</option>`).join('')}</select>`;
+}
+function setCol(p,id,v){(tg[p].col||(tg[p].col={}))[id]=v;ls.set('targets',tg);if(typeof publisherChanged==='function')publisherChanged()}
+function setZone(id,value){(tg.bilibili.zone||(tg.bilibili.zone={}))[id]=value.trim();ls.set('targets',tg);if(typeof publisherChanged==='function')publisherChanged()}
+async function refreshCol(id){try{await jsend('POST',`/api/accounts/${id}/collections`);loadTasks();setTimeout(loadAccounts,800)}catch(e){alert(e.message)}}
+
+const collapsedPlatforms=ls.get('collapsedPlatforms',{});
+let platformOrder=ls.get('platformOrder',Object.keys(PN));
+let accountOrder=ls.get('accountOrder',{});
+let accountGroupMode=ls.get('accountGroupMode','platform');
+let categoryOrder=ls.get('categoryOrder',[]);
+const collapsedCategories=ls.get('collapsedCategories',{});
+$('accountGroupMode').value=accountGroupMode;
+$('accountGroupMode').addEventListener('change',event=>{accountGroupMode=event.target.value;ls.set('accountGroupMode',accountGroupMode);renderAccounts()});
+const orderedPlatforms=()=>[...new Set([...platformOrder,...Object.keys(PN)])].filter(platform=>PN[platform]);
+const categoryKey=tag=>`tag:${tag}`;
+const orderedCategoryKeys=(tags,hasUnclassified)=>{
+  const available=[...tags].sort((a,b)=>a.localeCompare(b,'zh-CN')).map(categoryKey);
+  if(hasUnclassified)available.push('unclassified');
+  return [...new Set([...categoryOrder,...available])].filter(key=>available.includes(key));
+};
+const orderedAccounts=platform=>{
+  const order=accountOrder[platform]||[];
+  return accs.filter(account=>account.platform===platform).sort((a,b)=>{
+    const ai=order.indexOf(a.id),bi=order.indexOf(b.id);
+    return (ai<0?Infinity:ai)-(bi<0?Infinity:bi);
+  });
+};
+let accountsCollapsed=ls.get('accountsCollapsed',false);
+function toggleAccountList(){accountsCollapsed=!accountsCollapsed;ls.set('accountsCollapsed',accountsCollapsed);updateAccountCollapse()}
+function updateAccountCollapse(){
+  $('accountListBody').classList.toggle('hidden',accountsCollapsed);const button=$('collapseAccounts');setStableText(button,accountsCollapsed?'⌄':'⌃');button.setAttribute('aria-expanded',String(!accountsCollapsed));button.setAttribute('aria-label',accountsCollapsed?'展开账号列表':'收起账号列表');
+}
+function closeAccountMenus(){document.querySelectorAll('.account-menu[open]').forEach(menu=>menu.open=false)}
+function avatarMarkup(account){
+  const label=esc(account.name);return `<span class="account-avatar" data-sort-handle title="拖动调整账号顺序"><span>${esc(account.name.slice(0,1))}</span>${account.avatar_url?`<img src="${esc(account.avatar_url)}" alt="${label}头像" loading="lazy" draggable="false" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span>`;
+}
+let accountsRequest=null;
+function loadAccounts(){
+  if(accountsRequest)return accountsRequest;
+  accountsRequest=refreshAccounts().finally(()=>accountsRequest=null);
+  return accountsRequest;
+}
+async function refreshAccounts(){
+  accs=await api('/api/accounts');accountsLoaded=true;
+  if(document.querySelector('dialog[open]'))return;
+  renderCategoryOptions();renderStable($('tagList'),allTags().map(tag=>`<option value="${esc(tag)}">`).join(''));
+  setStableText($('accountCount'),accs.length);
+  // 轮询不打断正在操作的账号菜单。
+  if(!document.querySelector('.account-menu[open]')&&!$('accounts').contains(document.activeElement))renderAccounts();
+  renderTargets();
+}
+function renderAccounts(){
+  if(window.accountSorter?.busy)return;
+  const tags=allTags();if(tagFilter&&!tags.includes(tagFilter)){tagFilter='';ls.set('tagFilter','')}
+  renderStable($('tagFilter'),tags.length?['',...tags].map(tag=>`<button class="chip ${tag===tagFilter?'on':''}" type="button" data-t="${esc(tag)}">${tag?esc(tag):'全部'}</button>`).join(''):'');
+  $('accounts').dataset.groupMode=accountGroupMode;
+  $('accountSortHint').textContent=accountGroupMode==='category'?'拖动分类标题调整顺序；多标签账号会显示在多个分类中':'拖动头像或手柄调整顺序';
+  const groups=accountGroupMode==='category'
+    ? orderedCategoryKeys(tags,accs.some(a=>!a.tags.length)).map(key=>({name:key==='unclassified'?'未分类':key.slice(4),key,platform:'',list:accs.filter(a=>key==='unclassified'?!a.tags.length:a.tags.includes(key.slice(4))).sort((a,b)=>orderedPlatforms().indexOf(a.platform)-orderedPlatforms().indexOf(b.platform)||a.name.localeCompare(b.name,'zh-CN'))})).filter(group=>!tagFilter||group.name===tagFilter)
+    : orderedPlatforms().map(platform=>({name:PN[platform][0],key:platform,platform,list:orderedAccounts(platform).filter(account=>!tagFilter||account.tags.includes(tagFilter))}));
+  let html='';
+  for(const group of groups){
+    const {platform,list}=group;
+    const collapsed=accountGroupMode==='category'?collapsedCategories:collapsedPlatforms;
+    const isCollapsed=collapsed[group.key]??(accountGroupMode==='category'?collapsed[group.name]:undefined);
+    const open=isCollapsed===undefined?!!list.length:!isCollapsed;
+    html+=`<details class="platform-group" data-platform="${platform}" data-category="${esc(accountGroupMode==='category'?group.key:'')}" ${open?'open':''}><summary title="点击展开，长按拖动排序"><span class="platform-dot ${platform?PN[platform][1]:'category-dot'}"></span><b>${esc(group.name)}</b><span class="platform-count">${list.length}</span><span class="sort-grip" data-sort-handle title="拖动调整${platform?'平台':'作品分类'}顺序" aria-hidden="true"></span><span class="group-chevron">›</span></summary><div class="platform-accounts">`;
+    if(!list.length)html+='<div class="account-empty">暂无账号</div>';
+    for(const account of list){
+      const fans=Number.isSafeInteger(account.followers)?account.followers.toLocaleString('zh-CN'):esc(account.followers_display||'未获取');
+      const manual=PC[account.platform].backend_only;const status=(account.publish_backend||(account.platform==='xiaohongshu'?'matrixmedia':'assistant'))==='matrixmedia'?(account.busy?'矩媒处理中':account.matrix_partition?'矩媒中核对':'矩媒未绑定'):manual?'手动登录':account.busy?'使用中':account.status;const statusClass=manual?'offline':account.busy?'busy':account.status==='已登录'?'ok':'offline';
+      html+=`<article class="acc account-item" data-account="${account.id}" title="${platform?'长按拖动调整账号顺序':'账号所在作品分类'}">${avatarMarkup(account)}<div class="account-identity"><div class="account-name"><button class="account-profile" type="button" title="进入${esc(account.name)}的账号主页" onclick="${PC[account.platform].backend_only?`act('${account.id}','open',this)`:`openProfile('${account.id}',this)`}">${esc(account.name)}</button></div><div class="account-meta" title="${esc(account.followers_at?'粉丝更新于 '+account.followers_at:'暂未获取粉丝')}">${platform?'':esc(PN[account.platform][0])+' · '}${manual?'普通浏览器':`粉丝 <span>${fans}</span>${account.followers_error?'<span class="stats-stale" title="数据未更新">·</span>':''}`}<span class="account-status ${statusClass}" title="${esc(status)}" aria-label="${esc(status)}">${esc(status||'待登录')}</span></div><div class="account-tags">${chips(account.tags)}</div></div><div class="account-tools"><button class="account-open" type="button" title="${manual?'用独立普通浏览器打开此账号，登录状态请在后台查看':'打开'+PN[account.platform][0]+'创作者后台'}" onclick="act('${account.id}','open',this)">打开后台</button><details class="account-menu"><summary title="更多操作" aria-label="${esc(account.name)}更多操作">⋯</summary><div class="account-menu-panel">${PC[account.platform].browser_open?`<button type="button" title="仅用独立普通浏览器打开后台，手动上传、填写和发布" ${account.busy?'disabled':''} onclick="closeAccountMenus();act('${account.id}','open-browser',this)">浏览器打开（手动操作）</button>`:''}${PC[account.platform].backend_only?'':`<button type="button" onclick="closeAccountMenus();openProfile('${account.id}',this)">账号主页</button><button type="button" onclick="closeAccountMenus();act('${account.id}','login',this)">${account.status==='已登录'?'重新登录':'登录账号'}</button><button type="button" ${account.busy?'disabled':''} onclick="closeAccountMenus();act('${account.id}','check',this)">检查登录状态</button>`}<button type="button" onclick="closeAccountMenus();showAcc('${account.id}')">编辑账号</button><button class="danger" type="button" ${account.busy?'disabled':''} onclick="closeAccountMenus();delAcc('${account.id}')">删除账号</button></div></details></div></article>`;
+    }
+    html+='</div></details>';
+  }
+  renderStable($('accounts'),html||'<div class="account-empty">暂无匹配的账号</div>');updateAccountCollapse();
+}
+$('accounts').addEventListener('toggle',event=>{const group=event.target;if(!group.isConnected||!group.classList.contains('platform-group'))return;const byCategory=accountGroupMode==='category';const collapsed=byCategory?collapsedCategories:collapsedPlatforms;collapsed[byCategory?group.dataset.category:group.dataset.platform]=!group.open;ls.set(byCategory?'collapsedCategories':'collapsedPlatforms',collapsed)},true);
+$('tagFilter').onclick=event=>{const button=event.target.closest('[data-t]');if(button){tagFilter=button.dataset.t;ls.set('tagFilter',tagFilter);renderAccounts()}};
+document.addEventListener('click',event=>{document.querySelectorAll('.account-menu[open]').forEach(menu=>{if(!menu.contains(event.target))menu.open=false})});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Escape')return;
+  const menu=document.querySelector('.account-menu[open]');
+  if(menu){menu.open=false;menu.querySelector('summary').focus();event.preventDefault()}
+});
+$('accounts').addEventListener('toggle',event=>{
+  const menu=event.target;if(!menu.matches('.account-menu[open]'))return;
+  const panel=menu.querySelector('.account-menu-panel');panel.style.top='';panel.style.bottom='';
+  if(panel.getBoundingClientRect().bottom>window.innerHeight-12){panel.style.top='auto';panel.style.bottom='calc(100% + 6px)'}
+},true);
+
+function persistAccountSort(kind,element){
+  if(kind==='platform'){
+    platformOrder=[...$('accounts').querySelectorAll(':scope > .platform-group')].map(group=>group.dataset.platform);
+    ls.set('platformOrder',platformOrder);
+  }else if(kind==='category'){
+    const visible=[...$('accounts').querySelectorAll(':scope > .platform-group')].map(group=>group.dataset.category);
+    const full=orderedCategoryKeys(allTags(),accs.some(account=>!account.tags.length));
+    let next=0;
+    categoryOrder=full.map(key=>visible.includes(key)?visible[next++]:key);
+    ls.set('categoryOrder',categoryOrder);
+  }else{
+    const platform=element.closest('.platform-group').dataset.platform;
+    const visible=[...element.parentElement.children].filter(el=>el.classList.contains('account-item')).map(el=>el.dataset.account);
+    // 筛选时只换可见账号的相对位置，保留隐藏账号原来的位置。
+    let next=0;
+    const full=orderedAccounts(platform).map(account=>account.id);
+    accountOrder[platform]=full.map(id=>visible.includes(id)?visible[next++]:id);
+    ls.set('accountOrder',accountOrder);
+  }
+  if(kind!=='category')renderTargets();
+}
+
+let extraPlatformsExpanded=false;
+function renderTargets(){
+  if(!accountsLoaded)return;
+  if(typeof setPublisherBusy==='function'&&publisherBusy)return;
+  const isImg=document.querySelector('input[name=type]:checked').value==='image';
+  let h='',emptyTargets='',emptyCount=0,n=0;const cat=$('category').value.trim();
+  for(const p of orderedPlatforms()){
+    const list=orderedAccounts(p);
+    const t=tg[p]||(tg[p]={on:false,acc:''});
+    if(t.acc&&!list.find(a=>a.id===t.acc)){t.acc='';t.on=false;}
+    if(!t.acc&&list.length)t.acc=list[0].id;
+    const cur=list.find(a=>a.id===t.acc);
+    if(PC[p].backend_only){
+      t.on=false;
+      if(list.length)h+=`<div data-target="${p}" class="target off"><span class="${PN[p][1]}">${PN[p][0]}</span><div class="hint" style="grid-column:2/5">仅支持打开后台：每个账号使用独立普通浏览器，请在账号中心打开后手动上传、填写和发布。</div></div>`;
+      continue;
+    }
+    if(cur&&cur.collections&&t.col&&t.col[cur.id]&&!cur.collections.some(c=>c.name===t.col[cur.id]))delete t.col[cur.id];
+    const disabled=!list.length||(isImg&&!PC[p].image);
+    const on=t.on&&!disabled;if(on)n++;
+    const why=!list.length?'还没有账号':(isImg&&!PC[p].image?`${PN[p][0]}暂只支持视频`:'');
+    const markup=`<div data-target="${p}" class="target ${on?'':'off'}"><label><input type="checkbox" ${on?'checked':''} ${disabled?'disabled':''} onchange="setT('${p}','on',this.checked)"><span class="${PN[p][1]}">${PN[p][0]}</span></label>
+      ${why?`<div class="hint" style="grid-column:2/5">${why}</div>`:`<select aria-label="${PN[p][0]}发布账号" onchange="setT('${p}','acc',this.value)">${list.map(a=>`<option value="${a.id}" ${a.id===t.acc?'selected':''}>${esc(a.name)}${a.tags.length?' ['+esc(a.tags.join('/'))+']':''} · ${esc(a.status)}</option>`).join('')}</select><div class="collection-select">${colSelect(p,cur,t)}${PC[p].manual?'<div class="hint">核对后手动发布</div>':''}${p==='bilibili'&&cur.publish_backend!=='matrixmedia'?`<input aria-label="B站投稿分区" list="bilibiliZones" placeholder="分区，如 知识" value="${esc((t.zone||{})[cur.id]??(cur.name.trim()==='星河切片号'?'知识':''))}" oninput="setZone('${cur.id}',this.value)"><div class="hint">分区按账号保存，改名后继续沿用。</div>`:''}</div>${PC[p].collections&&(cur?.publish_backend||'assistant')!=='matrixmedia'?`<button class="b" title="刷新此账号的合集" onclick="refreshCol('${cur.id}')">刷新合集</button>`:'<span></span>'}`}
+      <span class="tgst">${cat&&list.length&&!list.some(a=>a.tags.includes(cat))?`<span style="color:#d97706">无「${esc(cat)}」标签账号</span>`:''}</span></div>`;
+    if(list.length)h+=markup;else{emptyTargets+=markup;emptyCount++}
+  }
+  if(!h)h='<p class="hint">先在账号中心添加账号，再选择发布平台。</p>';
+  if(emptyCount)h+=`<details id="unconfiguredPlatforms" class="extra-platforms" ${extraPlatformsExpanded?'open':''} ontoggle="if(this.isConnected)extraPlatformsExpanded=this.open"><summary>尚未添加账号的平台（${emptyCount}）</summary>${emptyTargets}</details>`;
+  // 下拉框正在被用户操作时不要重绘
+  if(!$('targets').contains(document.activeElement)||document.activeElement.tagName!=='SELECT')renderStable($('targets'),h);
+  setStableText($('selCount'),n?`将发布到 ${n} 个平台`:'请在上面勾选要发布的平台');
+  ls.set('targets',tg);
+  if(typeof syncPublisherTargets==='function')syncPublisherTargets();
+  if(typeof publisherChanged==='function')publisherChanged();
+}
+function setT(p,k,v){tg[p][k]=v;renderTargets()}
+function autoPick(){
+  const category=$('category').value.trim();ls.set('category',category);if(!category){renderTargets();return}
+  for(const platform of orderedPlatforms()){
+    if(PC[platform].backend_only){if(tg[platform])tg[platform].on=false;continue;}
+    const match=orderedAccounts(platform).find(account=>account.tags.includes(category));
+    tg[platform]={...tg[platform],on:!!match,acc:match?match.id:(tg[platform]?.acc||'')};
+  }
+  renderTargets();
+}
+function renderCategoryOptions(){
+  const tags=allTags();renderStable($('categoryChoices'),tags.map(tag=>`<button class="category-choice ${$('category').value.trim()===tag?'selected':''}" type="button" data-category="${esc(tag)}">${esc(tag)}</button>`).join(''));
+}
+$('categoryChoices').addEventListener('click',event=>{const button=event.target.closest('[data-category]');if(button){$('category').value=button.dataset.category;autoPick();renderCategoryOptions()}});
+$('category').addEventListener('input',renderCategoryOptions);
+
+async function act(id,a,button){if(accountBackend(accs.find(item=>item.id===id))==='matrixmedia'){if(a==='check'){publisherToast('请在矩媒内检查账号登录状态');return}await openMatrix();return}if(button)button.disabled=true;try{await jsend('POST',`/api/accounts/${id}/${a}`);loadTasks();setTimeout(loadAccounts,800)}catch(e){alert(e.message)}finally{if(button)button.disabled=false}}
+async function openProfile(id,button){
+  const account=accs.find(item=>item.id===id);
+  if(!account?.profile_url&&!['douyin','wechat'].includes(account?.platform)){showAcc(id);$('profileHint').textContent='请粘贴这个账号的主页链接并保存，然后点击账号名称进入。';$('accProfile').focus();return}
+  await act(id,'profile',button);
+}
+async function delAcc(id){const a=accs.find(x=>x.id===id);if(!confirm(`删除账号「${a.name}」？其登录状态也会清除。`))return;try{await api('/api/accounts/'+id,{method:'DELETE'});loadAccounts()}catch(e){alert(e.message)}}
+async function checkAll(){await jsend('POST','/api/check',{});loadTasks()}
+let accountSaving=false;
+function showAcc(id){
+  if(accountSaving)return;
+  editing=id||null;const a=accs.find(x=>x.id===id);
+  $('accTitle').textContent=a?'编辑账号':'添加账号';$('accPlat').disabled=!!a;
+  $('accPlat').value=a?a.platform:$('accPlat').value;$('accName').value=a?a.name:'';
+  $('accTags').value=a?a.tags.join(' '):'';
+  $('accProfile').value=a?a.profile_url||'':'';
+  $('profileHint').textContent='保存后点击账号名称，即可在软件内进入该账号主页。';
+  $('accHint').style.display=a?'none':'';$('accOk').textContent=a?'保存':'确定并去登录';
+  $('accError').classList.add('hidden');
+  if(!$('accModal').open)$('accModal').showModal();
+  $('accName').focus();
+}
+function hideAcc(){if(!accountSaving)$('accModal').close()}
+$('accountForm').addEventListener('submit',event=>{event.preventDefault();saveAcc()});
+$('accModal').addEventListener('cancel',event=>{if(accountSaving)event.preventDefault()});
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',()=>refreshWorkspace()));
+async function saveAcc(){
+  if(accountSaving||!$('accountForm').reportValidity())return;
+  accountSaving=true;$('accOk').disabled=true;$('accCancel').disabled=true;
+  $('accError').classList.add('hidden');
+  const b={name:$('accName').value,tags:$('accTags').value,profile_url:$('accProfile').value,...matrixAccountValues()};
+  try{
+    if(editing)await jsend('PATCH','/api/accounts/'+editing,b);
+    else await jsend('POST','/api/accounts',{...b,platform:$('accPlat').value});
+    $('accModal').close();
+    refreshWorkspace();
+  }catch(e){$('accError').textContent=e.message;$('accError').classList.remove('hidden')}
+  finally{accountSaving=false;$('accOk').disabled=false;$('accCancel').disabled=false}
+}
+
+const openLogs=new Set();
+let taskSnapshots=[],resultTarget=null;
+function taskTargetMarkup(task,id,target){
+  const color=['已提交','已发布'].includes(target.status)?'ok':target.status==='失败'?'error':target.status==='结果未确认'?'warning':'progress';
+  return `<div class="task-target"><div class="task-target-heading"><b>${esc(target.label)}</b><span class="task-state ${color}">${esc(target.status)}</span></div>${target.schedule_at?`<p class="hint">平台定时：${esc(target.schedule_at.replace('T',' '))}（北京时间）</p>`:''}${target.status==='已提交'?`<p class="hint">${target.source==='平台定时提交确认'?'平台已确认定时提交，尚未公开；仍需平台审核':'平台已确认提交，仍需平台审核'}</p>`:''}${target.error?`<p class="task-error">${esc(target.error)}</p>`:''}<div class="task-target-actions">${['待核对','结果未确认'].includes(target.status)?`<button class="b" onclick="act('${id}','open',this)">到账号核对</button>`:''}${task.status!=='进行中'&&target.status==='结果未确认'?`<button class="b" onclick="showTaskResult('${task.id}','${id}')">确认结果</button>`:''}${target.url?`<button class="b" onclick="openTaskWork('${task.id}','${id}',this)">查看作品</button>`:''}</div></div>`;
+}
+let tasksRequest=null;
+function loadTasks(){
+  if(tasksRequest)return tasksRequest;
+  tasksRequest=refreshTasks().finally(()=>tasksRequest=null);
+  return tasksRequest;
+}
+async function refreshTasks(){
+  const ts=await api('/api/tasks');taskSnapshots=ts;
+  if(document.querySelector('dialog[open]'))return;
+  if(!ts.length){renderStable($('tasks'),'<div class="hint">暂无任务</div>');return}
+  renderStable($('tasks'),ts.map(t=>`<div class="task" data-task="${t.id}"><div class="row"><b style="flex:1">${esc(t.title)}</b><span class="st-${t.status}">${t.status}</span>
+  <small style="flex:0 0 auto;color:#6b7280">${t.started_at}</small></div>
+  ${t.targets?Object.entries(t.targets).map(([id,target])=>taskTargetMarkup(t,id,target)).join(''):''}
+  ${t.targets&&t.status!=='进行中'&&Object.values(t.targets).some(x=>x.status==='失败')?`<button class="b task-retry" onclick="retryTask('${t.id}',this)">仅重试失败账号</button>`:''}
+  <details ${openLogs.has(t.id)?'open':''} ontoggle="if(this.isConnected){this.open?openLogs.add('${t.id}'):openLogs.delete('${t.id}')}"><summary class="hint">详细日志（${t.logs.length}）</summary><pre>${esc(t.logs.join('\n'))}</pre></details></div>`).join(''));
+}
+async function retryTask(id,button){button.disabled=true;try{await jsend('POST','/api/tasks/'+id+'/retry');publisherToast('已安排失败账号重试');await loadTasks()}catch(error){publisherToast(error.message)}finally{button.disabled=false}}
+function showTaskResult(taskId,id){const task=taskSnapshots.find(t=>t.id===taskId),target=task?.targets[id];if(!target)return;resultTarget={taskId,id};$('resultAccount').textContent=target.label;$('resultURL').value=target.url||'';$('resultError').classList.add('hidden');$('resultDialog').showModal()}
+async function confirmTaskResult(result){
+  if(!resultTarget)return;$('confirmPublished').disabled=true;$('confirmUnpublished').disabled=true;
+  try{await jsend('POST','/api/tasks/'+resultTarget.taskId+'/confirm',{account_id:resultTarget.id,result,url:$('resultURL').value.trim()});$('resultDialog').close();await loadTasks();loadHistory()}
+  catch(error){$('resultError').textContent=error.message;$('resultError').classList.remove('hidden')}
+  finally{$('confirmPublished').disabled=false;$('confirmUnpublished').disabled=false}
+}
+async function openTaskWork(taskId,id,button){const url=taskSnapshots.find(t=>t.id===taskId)?.targets[id]?.url;if(!url)return;button.disabled=true;try{await jsend('POST','/api/accounts/'+id+'/work',{url})}catch(error){publisherToast(error.message)}finally{button.disabled=false}}
+async function loadHistory(){
+  const h=await api('/api/history');
+  $('hisBody').innerHTML=h.map(r=>`<tr><td>${esc(r.time)}</td><td>${esc(r.account)}</td><td>${esc(r.category||'')}</td><td>${r.type==='video'?'视频':'图文'}</td><td>${esc(r.title)}${r.schedule_at?`<div class="hint">平台定时 ${esc(r.schedule_at.replace('T',' '))}（北京时间）</div>`:''}</td><td class="st-${['成功','已提交','已发布'].includes(r.result)?'完成':r.result==='结果未确认'?'待确认':'失败'}" title="${esc(r.error||'')}">${esc(r.result)}${r.attempts>1?` · ${r.attempts} 次尝试`:''}</td></tr>`).join('')||'<tr><td colspan=6 class="hint">暂无记录</td></tr>';
+}
+document.querySelectorAll('header nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('header nav button').forEach(x=>x.classList.toggle('on',x===b));
+  for(const id of ['pub','his','radar'])$(id).classList.toggle('hidden',b.dataset.tab!==id);
+  if(b.dataset.tab==='his')loadHistory();
+  if(b.dataset.tab==='radar')window.topicRadar?.open();
+  ls.set('activeTab',b.dataset.tab);
+});
+document.querySelector(`header nav button[data-tab="${ls.get('activeTab','pub')}"]`)?.click();
+let timer=0;
+async function quitApp(){
+  if(!confirm('确定退出程序吗？正在进行的发布任务和已打开的账号页面会被中断。'))return;
+  try{await window.topicRadar?.flush();if(typeof flushAutosave==='function')await flushAutosave();await ls.flush();await api('/api/shutdown',{method:'POST'})}catch(e){return alert('退出失败：'+e.message)}
+  clearInterval(timer);$('quitMsg').classList.remove('hidden');
+}
+function refreshWorkspace(){
+  if(document.hidden||document.querySelector('dialog[open]'))return;
+  return Promise.allSettled([loadTasks(),loadAccounts()]);
+}
+refreshWorkspace();
+timer=setInterval(refreshWorkspace,4000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshWorkspace()});
+</script>
+<script src="{{ url_for('static', filename='account-sort.js') }}"></script>
+<script>window.accountSorter=createAccountSorter($('accounts'),{onStart:closeAccountMenus,onCommit:persistAccountSort});</script>
+<script src="{{ url_for('static', filename='text-normalize.js') }}"></script>
+<script src="{{ url_for('static', filename='publisher.js') }}"></script>
+<script src="{{ url_for('static', filename='publisher-workflow.js') }}"></script>
+<script src="{{ url_for('static', filename='topic-radar.js') }}"></script>
+<script src="{{ url_for('static', filename='matrixmedia.js') }}"></script>
+</body>
+</html>
