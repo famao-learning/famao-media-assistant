@@ -11,7 +11,7 @@ jobs:
   offline-checks:
     runs-on: ubuntu-latest
     env:
-      MEDIA_ASSISTANT_DATA_DIR: ${{ runner.temp }}/media-assistant-test-data
+      MEDIA_ASSISTANT_DATA_DIR: data/ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
